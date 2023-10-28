@@ -1,22 +1,28 @@
 "use client"; // this registers <Editor> as a Client Component
-import { getRandomUser } from "@/utils/randomUser";
 import { BlockNoteEditor } from "@blocknote/core";
 import "@blocknote/core/style.css";
-import { BlockNoteView, useBlockNote } from "@blocknote/react";
+import { BlockNoteView } from "@blocknote/react";
+import { useEffect, useState } from "react";
 import * as Y from "yjs";
-const doc = new Y.Doc();
 
-const { WebsocketProvider } = require("y-websocket");
-const provider = new WebsocketProvider("ws://localhost:1234", "draw-room", doc);
+
+const { WebsocketProvider } = require("y-websocket")
 
 export default function Editor() {
-  const editor: BlockNoteEditor = useBlockNote({
-    collaboration: {
-      provider,
-      fragment: doc.getXmlFragment("document-store"),
-      user: getRandomUser(),
-    },
-  });
+  const [ydoc, setYdoc] = useState<Y.Doc | null>(null);
+  const [provider, setProvider] = useState<any>(null);
+  const [fragment, setFragment] = useState<any>(null);
+  const [editor, setEditor] = useState<BlockNoteEditor | null>(null);
+  
 
-  return <BlockNoteView editor={editor} />;
+  useEffect(() => {
+    setYdoc(new Y.Doc());
+  }, []);
+  
+  useEffect(() => {
+    setProvider(new WebsocketProvider("ws://localhost:1234", "draw-room", ydoc));
+    setFragment(ydoc!.getXmlFragment("document-store"));
+  }, [ydoc]);
+
+  return editor && <BlockNoteView editor={editor} />;
 }
